@@ -1,0 +1,35 @@
+# Use postgres/example user/password credentials
+version: '3.7'
+
+networks:
+  dev_network:
+
+services:
+
+  db:
+    image: postgres:13.4
+    env_file: .env
+#    restart: always
+    networks:
+      dev_network:
+        aliases:
+          - db_main
+    ports:
+      - 5432:5432
+
+  app:
+    build:
+      context: ./app
+    depends_on:
+      - db
+    env_file: .env
+    environment:
+      - PG_DSN=postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@db_main:5432/$POSTGRES_DB
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./app:/app
+    networks:
+      dev_network:
+        aliases:
+          - app
